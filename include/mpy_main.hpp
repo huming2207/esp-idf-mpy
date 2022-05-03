@@ -6,6 +6,7 @@ class mpy_main
 {
 public:
     esp_err_t init(size_t _heap_size);
+    void start_repl();
 
 private:
     static const constexpr char *TAG = "mpy_main";

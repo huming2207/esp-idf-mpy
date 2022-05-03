@@ -81,9 +81,14 @@ endif()
 
 idf_component_register(
         SRCS
-            "mpy/shared/runtime/pyexec.c" "mpy/shared/runtime/pyexec.h"
+            ${MICROPY_SOURCE_PY}
+            ${MICROPY_SOURCE_EXTMOD}
+            ${MICROPY_SOURCE_SHARED}
+            ${MICROPY_SOURCE_LIB}
+            ${MICROPY_SOURCE_DRIVERS}
+            ${MICROPY_SOURCE_PORT}
+            ${MICROPY_SOURCE_BOARD}
             "mpy_main.cpp" "include/mpy_main.hpp"
-            ${MICROPY_SOURCE_PY} ${MICROPY_SOURCE_PORT}
         INCLUDE_DIRS
             "${MICROPY_LIB_DIR}/include"
             ${MICROPY_INC_CORE}

@@ -1,12 +1,13 @@
 #include <esp_log.h>
+#include <cstring>
 
 #include "py/gc.h"
 #include "py/runtime.h"
 
 #include "mpy_main.hpp"
-#include "pyexec.h"
 #include "py/lexer.h"
 #include "py/compile.h"
+#include "shared/runtime/pyexec.h"
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     nlr_buf_t nlr;
@@ -40,4 +41,27 @@ esp_err_t mpy_main::init(size_t _heap_size)
     mp_init();
 
     return ESP_OK;
+}
+
+int vprintf_null(const char *format, va_list ap)
+{
+    // do nothing: this is used as a log target during raw repl mode
+    return 0;
+}
+
+void mpy_main::start_repl()
+{
+    for (;;) {
+        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+            vprintf_like_t vprintf_log = esp_log_set_vprintf(vprintf_null);
+            if (pyexec_raw_repl() != 0) {
+                break;
+            }
+            esp_log_set_vprintf(vprintf_log);
+        } else {
+            if (pyexec_friendly_repl() != 0) {
+                break;
+            }
+        }
+    }
 }
