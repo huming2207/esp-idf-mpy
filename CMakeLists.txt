@@ -1,7 +1,17 @@
-set(MICROPY_LIB_DIR    ${CMAKE_CURRENT_LIST_DIR}) # This component's directory
+set(MICROPY_LIB_DIR    ${COMPONENT_DIR}) # This component's directory
 set(MICROPY_DIR         ${MICROPY_LIB_DIR}/mpy) # The mpy submodule's directory
 
+get_filename_component(MICROPY_DIR ${MICROPY_LIB_DIR}/mpy ABSOLUTE)
+
+message(${MICROPY_DIR})
 include("${MICROPY_DIR}/py/py.cmake")
+
+file(GLOB_RECURSE MPY_C_SRC ${MICROPY_DIR}/py/*.c ${MICROPY_DIR}/shared/*.c)
+file(GLOB_RECURSE MPY_C_HEADERS ${MICROPY_DIR}/py/*.h ${MICROPY_DIR}/shared/*.h)
+
+#set_source_files_properties(${MPY_C_SRCS} PROPERTIES LANGUAGE C)
+#set_source_files_properties(${MPY_C_HEADERS} PROPERTIES LANGUAGE C HEADER_FILE_ONLY TRUE)
+
 
 if(NOT CMAKE_BUILD_EARLY_EXPANSION)
     include(${MICROPY_DIR}/py/usermod.cmake)
@@ -11,6 +21,7 @@ endif()
 set(MICROPY_SOURCE_PORT
         "${MICROPY_LIB_DIR}/mphalport.c" "${MICROPY_LIB_DIR}/include/mphalport.h"
         "${MICROPY_LIB_DIR}/mpthreadport.c" "${MICROPY_LIB_DIR}/include/mpthreadport.h"
+        "${MICROPY_LIB_DIR}/gccollect.c" "${MICROPY_LIB_DIR}/include/gccollect.h"
 )
 
 set(MICROPY_SOURCE_QSTR
@@ -82,13 +93,9 @@ endif()
 idf_component_register(
         SRCS
             ${MICROPY_SOURCE_PY}
-            ${MICROPY_SOURCE_EXTMOD}
-            ${MICROPY_SOURCE_SHARED}
-            ${MICROPY_SOURCE_LIB}
-            ${MICROPY_SOURCE_DRIVERS}
             ${MICROPY_SOURCE_PORT}
-            ${MICROPY_SOURCE_BOARD}
-            "mpy_main.cpp" "include/mpy_main.hpp"
+            ${MPY_C_SRCS} ${MPY_C_HEADERS}
+            "mpy_main.c" "include/mpy_main.h"
         INCLUDE_DIRS
             "${MICROPY_LIB_DIR}/include"
             ${MICROPY_INC_CORE}

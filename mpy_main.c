@@ -1,15 +1,14 @@
 #include <esp_log.h>
-#include <cstring>
+#include <string.h>
 
-#include "py/gc.h"
-#include "py/runtime.h"
+#include <mpy_main.h>
 
-#include "mpy_main.hpp"
-#include "py/lexer.h"
-#include "py/compile.h"
-#include "shared/runtime/pyexec.h"
+#define TAG "mpy_main"
 
-void do_str(const char *src, mp_parse_input_kind_t input_kind) {
+static uint8_t *heap_ptr = NULL;
+
+static void do_str(const char *src, mp_parse_input_kind_t input_kind)
+{
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
@@ -24,18 +23,22 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     }
 }
 
-esp_err_t mpy_main::init(size_t _heap_size)
+esp_err_t mpy_init(size_t _heap_size)
 {
+    volatile uint32_t sp = (uint32_t)esp_cpu_get_sp();
     if (_heap_size < 1) {
         ESP_LOGE(TAG, "Heap too small: %zu", _heap_size);
         return ESP_ERR_INVALID_ARG;
     }
 
     heap_ptr = (uint8_t *)malloc(_heap_size);
-    if (heap_ptr == nullptr) {
+    if (heap_ptr == NULL) {
         ESP_LOGE(TAG, "Failed to allocate heap");
         return ESP_ERR_NO_MEM;
     }
+
+    mp_stack_set_top((void *)sp);
+    mp_stack_set_limit(8192);
 
     gc_init(heap_ptr, heap_ptr + _heap_size);
     mp_init();
@@ -43,13 +46,13 @@ esp_err_t mpy_main::init(size_t _heap_size)
     return ESP_OK;
 }
 
-int vprintf_null(const char *format, va_list ap)
+static int vprintf_null(const char *format, va_list ap)
 {
     // do nothing: this is used as a log target during raw repl mode
     return 0;
 }
 
-void mpy_main::start_repl()
+void mpy_start_repl()
 {
     for (;;) {
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {

@@ -29,6 +29,10 @@
 #ifndef INCLUDED_MPHALPORT_H
 #define INCLUDED_MPHALPORT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "freertos/task.h"
 
 #include "py/ringbuf.h"
@@ -106,5 +110,9 @@ static inline int mp_hal_pin_read(mp_hal_pin_obj_t pin) {
 static inline void mp_hal_pin_write(mp_hal_pin_obj_t pin, int v) {
     gpio_set_level(pin, v);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // INCLUDED_MPHALPORT_H

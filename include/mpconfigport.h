@@ -1,5 +1,10 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 #include <stdint.h>
 #include <alloca.h>
 
@@ -95,3 +100,7 @@ typedef long mp_off_t;
     } while (0);
 #endif
 #define MICROPY_HELPER_REPL (1)
+
+#ifdef __cplusplus
+}
+#endif
